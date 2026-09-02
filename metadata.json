@@ -1,0 +1,6 @@
+{
+  "name": "AI Credit Risk Management Platform",
+  "description": "Production-ready enterprise credit risk management, loan decision engine, Basel RWA capital analytics, vintage/roll-rate tracking, and AI risk assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
