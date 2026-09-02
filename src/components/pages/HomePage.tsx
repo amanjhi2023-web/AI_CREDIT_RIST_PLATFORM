@@ -1,314 +1,264 @@
 import React from 'react';
-import { PortfolioSummary, RiskDistributionData, LoanApplication } from '../../types';
-import { formatINR, formatPercent, formatNumber } from '../../utils/formatting';
+import { PORTFOLIO_STATS, PORTFOLIO_RATING_DISTRIBUTION } from '../../data/mockData';
 import { 
-  Building2, 
   UserCheck, 
+  PieChart, 
+  ArrowRight, 
+  ShieldCheck, 
   Layers, 
   TrendingUp, 
-  ShieldAlert, 
-  Coins, 
-  Scale, 
+  Landmark, 
+  FileText, 
   Activity, 
-  ArrowRight, 
-  Sparkles, 
+  FlaskConical, 
   CheckCircle2, 
-  XCircle, 
-  Sliders, 
-  ChevronRight,
-  PieChart as PieIcon,
-  Bot,
-  Zap,
   BarChart3,
-  ShieldCheck
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 
 interface HomePageProps {
-  summary: PortfolioSummary;
-  riskDist: RiskDistributionData[];
-  recentLoans: LoanApplication[];
-  onNavigate: (tab: string, loan?: LoanApplication, subTab?: 'application' | 'behavioral') => void;
-  onOpenAiAssistant: () => void;
+  onNavigate: (tab: string) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({
-  summary,
-  riskDist,
-  recentLoans,
-  onNavigate,
-  onOpenAiAssistant,
-}) => {
+export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+  const formatCurrency = (val: number) => {
+    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakhs`;
+    return `₹${val.toLocaleString('en-IN')}`;
+  };
+
   return (
-    <div id="home-landing-page" className="p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-200 select-none">
-      {/* Welcome Hero Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#0D1B3E] via-[#11234D] to-[#0A1633] p-7 rounded-2xl text-white shadow-xl border border-blue-900/40">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/40 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-yellow-300" />
-                AI-Powered Credit Risk Intelligence
-              </span>
-              <span className="text-xs text-slate-300">Enterprise Edition v3.4</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Credit Risk & Underwriting Command Center
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Select your risk analysis workflow below. Choose <strong>Portfolio Risk</strong> for macro solvency and cohort analytics, or <strong>Individual Risk</strong> for application scoring (Approved/Rejected) and behavioral risk monitoring (PD, LGD, EAD, ECL, Capital).
-            </p>
+    <div id="home-dashboard-page" className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+      {/* Hero / Platform Overview Banner */}
+      <div className="rounded-2xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-slate-700/80 p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent pointer-events-none"></div>
+        <div className="relative z-10 max-w-3xl space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <span>Basel III & IFRS 9 Compliant Architecture</span>
           </div>
-
-          {/* Quick AI Trigger */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onOpenAiAssistant}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer"
-            >
-              <Bot className="w-4 h-4 text-blue-200" />
-              <span>Ask AI Copilot</span>
-              <Sparkles className="w-3 h-3 text-yellow-300" />
-            </button>
-          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            AI CREDIT RISK PLATFORM
+          </h1>
+          <p className="text-sm md:text-base text-slate-300 leading-relaxed font-normal">
+            AI-powered credit risk assessment and portfolio risk management platform. Built with strict methodological separation between Application Risk (New Customers), Behavioral Risk (Existing Seasoned Mortgages), and Portfolio Capital Analytics.
+          </p>
         </div>
-
-        {/* Subtle Background Glow Accent */}
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
-      {/* Primary Gateway Cards: Portfolio Risk vs Individual Risk (User Core Requirement) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* 1. PORTFOLIO RISK HUB CARD */}
-        <div 
-          id="card-select-portfolio-risk"
-          className="group relative bg-[#111C35] hover:bg-[#142240] rounded-2xl p-6 border border-slate-800 hover:border-blue-500/50 shadow-xl transition-all duration-200 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30 group-hover:scale-105 transition-transform">
-                <PieIcon className="w-6 h-6" />
-              </div>
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-950/80 text-blue-300 border border-blue-800/80">
-                Macro & Portfolio View
-              </span>
-            </div>
-
-            <h2 className="text-xl font-bold text-white tracking-tight group-hover:text-blue-300 transition-colors">
-              Portfolio Risk Analytics
-            </h2>
-            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-              Analyze aggregated credit exposure, Basel III regulatory capital adequacy (CRAR), delinquency transition roll-rates, vintage cohort curves, and reverse stress testing.
-            </p>
-
-            {/* Quick Metrics Pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5">
-              <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Exposure</div>
-                <div className="text-sm font-bold text-white mt-0.5">{formatINR(summary.totalExposure, true)}</div>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Total ECL Loss</div>
-                <div className="text-sm font-bold text-white mt-0.5">{formatINR(summary.totalEcl, true)}</div>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Average PD</div>
-                <div className="text-sm font-bold text-emerald-400 mt-0.5">{formatPercent(summary.avgPd)}</div>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">CRAR Solvency</div>
-                <div className="text-sm font-bold text-emerald-400 mt-0.5">{formatPercent(summary.capitalAdequacyRatio || 0.1485)}</div>
-              </div>
-            </div>
-
-            {/* Sub-Feature Links */}
-            <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Vintage Cohorts (MOB)</span>
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Roll-Rate Transition</span>
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Basel III RWA</span>
-              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Macro Shocks</span>
-            </div>
-          </div>
-
-          <div className="pt-6 mt-4 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-medium">{formatNumber(summary.totalLoans)} active balance sheet accounts</span>
-            <button
-              type="button"
-              id="btn-open-portfolio-hub"
-              onClick={() => onNavigate('overview')}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-blue-600/30 cursor-pointer"
-            >
-              <span>Explore Portfolio Risk</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
+      {/* Top-Level Portfolio / Model KPI Cards */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Portfolio Health & Solvency KPIs (Enterprise Aggregate)
+          </h2>
+          <span className="text-[11px] text-slate-500 font-mono">Live Panel 2024-Q3</span>
         </div>
 
-        {/* 2. INDIVIDUAL RISK HUB CARD */}
-        <div 
-          id="card-select-individual-risk"
-          className="group relative bg-[#111C35] hover:bg-[#142240] rounded-2xl p-6 border border-slate-800 hover:border-emerald-500/50 shadow-xl transition-all duration-200 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 group-hover:scale-105 transition-transform">
-                <UserCheck className="w-6 h-6" />
-              </div>
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
-                Loan-Level & Behavioral
-              </span>
-            </div>
-
-            <h2 className="text-xl font-bold text-white tracking-tight group-hover:text-emerald-300 transition-colors">
-              Individual Risk & Underwriting
-            </h2>
-            <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-              Evaluate single borrower risk profiles via two specialized engines: <strong>Application Risk</strong> (Approved/Rejected new origination scorecards) and <strong>Behavioral Risk</strong> (PD, LGD, EAD, ECL, Capital & Real-Time Decisioning).
-            </p>
-
-            {/* Direct Sub-choice Buttons in Individual Risk Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
-              {/* Option A: Application Risk */}
-              <div 
-                onClick={() => onNavigate('individual_risk', undefined, 'application')}
-                className="p-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/50 cursor-pointer transition-all"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-xs text-white">Application Risk</span>
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" title="Approved" />
-                    <span className="w-2 h-2 rounded-full bg-rose-400" title="Rejected" />
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-snug">
-                  New originations with <strong>Approved</strong> & <strong>Rejected</strong> loan scorecards, cutoff policies, and rules.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-blue-400 flex items-center gap-1">
-                  <span>Open Scorecards</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              </div>
-
-              {/* Option B: Behavioral Risk */}
-              <div 
-                onClick={() => onNavigate('individual_risk', undefined, 'behavioral')}
-                className="p-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition-all"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-xs text-white">Behavioral Risk</span>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">PD • LGD • ECL</span>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-snug">
-                  Customer ID, Loan ID, PD, LGD, EAD, ECL, Score, Region, Capital with <strong>Approve/Reject</strong> actions.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                  <span>Open Monitoring</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Parameters Tags */}
-            <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-400 font-mono">
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">CustomerID</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">LoanID</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">PD</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">LGD</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">EAD</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">ECL</span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">Capital</span>
-            </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+          {/* Total Accounts */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-colors">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Total Accounts</div>
+            <div className="text-xl font-bold text-slate-900 mt-1">{PORTFOLIO_STATS.totalLoans.toLocaleString('en-IN')}</div>
+            <div className="text-[11px] text-slate-600 mt-1 font-medium">Active retail mortgages</div>
           </div>
 
-          <div className="pt-6 mt-4 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-medium">SHAP Explainability & Real-Time Engine</span>
-            <button
-              type="button"
-              id="btn-open-individual-hub"
-              onClick={() => onNavigate('individual_risk', undefined, 'application')}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-emerald-600/30 cursor-pointer"
-            >
-              <span>Launch Individual Risk</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </button>
+          {/* Average PD */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-colors">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Average 12M PD</div>
+            <div className="text-xl font-bold text-blue-600 mt-1">{(PORTFOLIO_STATS.averagePd * 100).toFixed(2)}%</div>
+            <div className="text-[11px] text-slate-600 mt-1 font-medium">TTC Calibrated: {(PORTFOLIO_STATS.averageTtcPd * 100).toFixed(2)}%</div>
+          </div>
+
+          {/* Default Rate */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-colors">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Default Rate (NPA)</div>
+            <div className="text-xl font-bold text-emerald-600 mt-1">{(PORTFOLIO_STATS.defaultRate * 100).toFixed(2)}%</div>
+            <div className="text-[11px] text-slate-600 mt-1 font-medium">{PORTFOLIO_STATS.npaCount} accounts in 90+ DPD</div>
+          </div>
+
+          {/* Expected Loss */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-colors">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Expected Loss (ECL)</div>
+            <div className="text-xl font-bold text-amber-600 mt-1">{formatCurrency(PORTFOLIO_STATS.totalExpectedLoss)}</div>
+            <div className="text-[11px] text-slate-600 mt-1 font-medium">0.98% of total exposure</div>
+          </div>
+
+          {/* Capital Requirement */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-colors">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-tight">Basel III Capital</div>
+            <div className="text-xl font-bold text-purple-600 mt-1">{formatCurrency(PORTFOLIO_STATS.totalCapitalRequirement)}</div>
+            <div className="text-[11px] text-slate-600 mt-1 font-medium">10.5% Pillar 1 + CCB Buffer</div>
           </div>
         </div>
       </div>
 
-      {/* Recent Evaluated Loan Applications Grid */}
-      <div className="bg-[#111C35] rounded-xl p-5 border border-slate-800 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Recent Risk Underwritings</span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Click any application to evaluate via Application Scorecard or Behavioral Risk metrics.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigate('multiple')}
-            className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+      {/* Two Major Primary Action Cards: INDIVIDUAL RISK vs PORTFOLIO RISK */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Core Risk Assessment Gateways
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1: INDIVIDUAL RISK */}
+          <div 
+            id="action-card-individual-risk"
+            onClick={() => onNavigate('individual_risk')}
+            className="group bg-white rounded-2xl p-6 md:p-7 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
           >
-            <span>View All Applications</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {recentLoans.slice(0, 6).map((loan) => (
-            <div
-              key={loan.loanId}
-              onClick={() => onNavigate('individual_risk', loan, 'behavioral')}
-              className="p-4 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all duration-150 space-y-3 group"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-bold text-sm text-white group-hover:text-blue-300 transition-colors">
-                    {loan.customerName}
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-mono">
-                    {loan.loanId} • {loan.customerId}
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
+                  <UserCheck className="w-6 h-6" />
                 </div>
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
-                    loan.decision === 'APPROVED'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : loan.decision === 'REJECTED'
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  }`}
-                >
-                  {loan.decision}
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
+                  Single Account Level
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-xs pt-1 border-t border-slate-800/80">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block">Amount</span>
-                  <span className="font-bold text-white">{formatINR(loan.loanAmount)}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block">PD / Score</span>
-                  <span className="font-bold text-white">
-                    {formatPercent(loan.pd)} <span className="text-slate-400 font-normal">({loan.creditScore})</span>
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block">ECL Loss</span>
-                  <span className="font-bold text-white">{formatINR(loan.ecl)}</span>
-                </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                  <span>INDIVIDUAL RISK</span>
+                </h3>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Assess credit risk for a single customer or account with strict methodological separation between originations and seasoned accounts.
+                </p>
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                <span>{loan.loanType} • {loan.region}</span>
-                <span className="text-blue-400 font-semibold group-hover:underline">Inspect Profile →</span>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div 
+                  onClick={(e) => { e.stopPropagation(); onNavigate('application_scorecard'); }}
+                  className="p-3 rounded-lg bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 transition-colors"
+                >
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 text-emerald-700">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Application Scorecard</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">For new customer loan originations & thin files</div>
+                </div>
+
+                <div 
+                  onClick={(e) => { e.stopPropagation(); onNavigate('behavioral_scorecard'); }}
+                  className="p-3 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-colors"
+                >
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 text-blue-700">
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>Behavioral Scorecard</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">For seasoned accounts (MOB ≥ 6) with 12M PD & Basel ECL</div>
+                </div>
               </div>
             </div>
-          ))}
+
+            <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+              <span>Launch Individual Risk Module</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Card 2: PORTFOLIO RISK */}
+          <div 
+            id="action-card-portfolio-risk"
+            onClick={() => onNavigate('portfolio_risk')}
+            className="group bg-white rounded-2xl p-6 md:p-7 border border-slate-200/90 shadow-sm hover:shadow-md hover:border-purple-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 group-hover:scale-105 transition-transform">
+                  <PieChart className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700">
+                  Macro / Aggregate Level
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-purple-600 transition-colors flex items-center gap-2">
+                  <span>PORTFOLIO RISK</span>
+                </h3>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Analyze risk across a portfolio of thousands of loans. Upload datasets, view rating distributions, perform vintage cohort analysis, and execute regulatory stress testing.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 text-purple-700">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Vintage & MOB Analysis</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Origination cohort decay & seasoning hazard curves</div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 text-rose-700">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Macro Stress Testing</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">Base Case, Mild Downturn, and Severe Downturn shocks</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600 group-hover:translate-x-1 transition-transform">
+              <span>Launch Portfolio Analytics & Stress Engine</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary Quick Navigation Grid for Model Governance & Analytics */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Model Governance & Data Analytics Modules
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div 
+            onClick={() => onNavigate('model_performance')}
+            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-amber-300 hover:shadow-xs transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
+              <FlaskConical className="w-4 h-4" />
+            </div>
+            <div className="text-xs font-bold text-slate-900">Model Performance</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">AUC (0.864), Gini (0.728), KS (48.2%), ROC & Calibration curves.</div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('data_quality')}
+            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-xs transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <div className="text-xs font-bold text-slate-900">Data Quality & Audit</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Reconciliation checks RC-01 to RC-05, outlier & anomaly filters.</div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('eda_apc')}
+            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-cyan-300 hover:shadow-xs transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center mb-2">
+              <BarChart3 className="w-4 h-4" />
+            </div>
+            <div className="text-xs font-bold text-slate-900">EDA & APC Analysis</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Age-Period-Cohort decomposition, correlation heatmaps & distributions.</div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('reports')}
+            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-rose-300 hover:shadow-xs transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-2">
+              <FileText className="w-4 h-4" />
+            </div>
+            <div className="text-xs font-bold text-slate-900">Regulatory Reports</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Instant PDF & audit export for underwriting, ECL & Basel capital.</div>
+          </div>
         </div>
       </div>
     </div>

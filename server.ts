@@ -4,14 +4,16 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { 
-  ALL_LOANS, 
-  PORTFOLIO_SUMMARY_DATA, 
-  RISK_DISTRIBUTION, 
-  VINTAGE_COHORTS, 
-  ROLL_RATE_DATA, 
-  BASEL_SUMMARY_DATA, 
-  STRESS_TEST_SCENARIOS, 
-  FALLBACK_AI_KNOWLEDGE 
+  PORTFOLIO_SAMPLE_RECORDS,
+  PORTFOLIO_STATS,
+  PORTFOLIO_RATING_DISTRIBUTION,
+  PORTFOLIO_VINTAGE_DATA,
+  PORTFOLIO_MOB_DATA,
+  STRESS_SCENARIOS,
+  MODEL_PERFORMANCE_DATA,
+  DATA_QUALITY_REPORT,
+  EDA_VARIABLE_SUMMARIES,
+  APC_DATA
 } from './src/data/mockData';
 
 dotenv.config();
@@ -21,7 +23,7 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Initialize server-side Gemini client lazily
+// Lazy-initialize Gemini client
 let aiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
   if (!aiClient && process.env.GEMINI_API_KEY) {
@@ -44,58 +46,66 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'operational',
     service: 'AI Credit Risk Gateway',
-    version: '3.4.2-enterprise',
+    version: '3.1.2-enterprise',
     decisionEngine: 'Active',
     geminiEnabled: Boolean(process.env.GEMINI_API_KEY),
     timestamp: new Date().toISOString()
   });
 });
 
-// Portfolio Summary
+// Portfolio Summary & Stats
 app.get('/api/portfolio/summary', (req, res) => {
-  res.json(PORTFOLIO_SUMMARY_DATA);
+  res.json(PORTFOLIO_STATS);
 });
 
-// Risk Distribution
-app.get('/api/portfolio/risk-distribution', (req, res) => {
-  res.json(RISK_DISTRIBUTION);
+// Rating Distribution
+app.get('/api/portfolio/rating-distribution', (req, res) => {
+  res.json(PORTFOLIO_RATING_DISTRIBUTION);
 });
 
-// Vintage Analysis
+// Vintage Data
 app.get('/api/portfolio/vintage', (req, res) => {
-  res.json(VINTAGE_COHORTS);
+  res.json(PORTFOLIO_VINTAGE_DATA);
 });
 
-// Roll Rate Analysis
-app.get('/api/portfolio/roll-rate', (req, res) => {
-  res.json(ROLL_RATE_DATA);
-});
-
-// Basel III Summary
-app.get('/api/basel/summary', (req, res) => {
-  res.json(BASEL_SUMMARY_DATA);
+// MOB Seasoning Data
+app.get('/api/portfolio/mob', (req, res) => {
+  res.json(PORTFOLIO_MOB_DATA);
 });
 
 // Stress Test Scenarios
 app.get('/api/stress-test', (req, res) => {
-  res.json(STRESS_TEST_SCENARIOS);
+  res.json(STRESS_SCENARIOS);
+});
+
+// Model Performance Validation Metrics
+app.get('/api/model-performance', (req, res) => {
+  res.json(MODEL_PERFORMANCE_DATA);
+});
+
+// Data Quality & Reconciliation
+app.get('/api/data-quality', (req, res) => {
+  res.json(DATA_QUALITY_REPORT);
+});
+
+// EDA & APC Data
+app.get('/api/eda-apc', (req, res) => {
+  res.json({
+    variables: EDA_VARIABLE_SUMMARIES,
+    apc: APC_DATA
+  });
 });
 
 // All Loans & Search / Filter
 app.get('/api/loans', (req, res) => {
-  let filtered = [...ALL_LOANS];
+  let filtered = [...PORTFOLIO_SAMPLE_RECORDS];
   const { 
     loanType, 
-    riskCategory, 
+    rating, 
     region, 
-    segment, 
-    decision, 
     search, 
-    status,
     minPd,
-    maxPd,
-    minAmount,
-    maxAmount
+    maxPd
   } = req.query;
 
   if (search) {
@@ -103,8 +113,7 @@ app.get('/api/loans', (req, res) => {
     filtered = filtered.filter(l => 
       l.loanId.toLowerCase().includes(q) || 
       l.customerId.toLowerCase().includes(q) || 
-      l.customerName.toLowerCase().includes(q) ||
-      l.branch.toLowerCase().includes(q)
+      l.customerName.toLowerCase().includes(q)
     );
   }
 
@@ -112,24 +121,12 @@ app.get('/api/loans', (req, res) => {
     filtered = filtered.filter(l => l.loanType === loanType);
   }
 
-  if (riskCategory && riskCategory !== 'All') {
-    filtered = filtered.filter(l => l.riskCategory === riskCategory);
+  if (rating && rating !== 'All') {
+    filtered = filtered.filter(l => l.rating === rating);
   }
 
   if (region && region !== 'All') {
     filtered = filtered.filter(l => l.region === region);
-  }
-
-  if (segment && segment !== 'All') {
-    filtered = filtered.filter(l => l.employmentType === segment);
-  }
-
-  if (decision && decision !== 'All') {
-    filtered = filtered.filter(l => l.decision === decision);
-  }
-
-  if (status && status !== 'All') {
-    filtered = filtered.filter(l => l.status === status);
   }
 
   if (minPd) {
@@ -139,39 +136,10 @@ app.get('/api/loans', (req, res) => {
     filtered = filtered.filter(l => l.pd <= parseFloat(String(maxPd)));
   }
 
-  if (minAmount) {
-    filtered = filtered.filter(l => l.loanAmount >= parseFloat(String(minAmount)));
-  }
-  if (maxAmount) {
-    filtered = filtered.filter(l => l.loanAmount <= parseFloat(String(maxAmount)));
-  }
-
   res.json({
     totalCount: filtered.length,
     loans: filtered
   });
-});
-
-// Single Customer Risk Profile
-app.get('/api/customer/:customer_id/risk', (req, res) => {
-  const customerId = req.params.customer_id;
-  const loan = ALL_LOANS.find(l => l.customerId.toLowerCase() === customerId.toLowerCase());
-  
-  if (!loan) {
-    return res.status(404).json({ error: `Customer with ID ${customerId} not found` });
-  }
-  res.json(loan);
-});
-
-// Single Loan Risk Profile
-app.get('/api/loan/:loan_id/risk', (req, res) => {
-  const loanId = req.params.loan_id;
-  const loan = ALL_LOANS.find(l => l.loanId.toLowerCase() === loanId.toLowerCase());
-  
-  if (!loan) {
-    return res.status(404).json({ error: `Loan with ID ${loanId} not found` });
-  }
-  res.json(loan);
 });
 
 // AI Risk Assistant Ask Endpoint
@@ -186,20 +154,20 @@ app.post('/api/assistant/ask', async (req, res) => {
     
     if (ai) {
       try {
-        const systemPrompt = `You are an executive Senior Credit Risk & Underwriting AI Specialist for a tier-1 banking institution.
-Your duty is to provide authoritative, rigorous, mathematically sound, and explainable insights regarding credit risk, loan underwriting decisions, probability of default (PD), Loss Given Default (LGD), Exposure at Default (EAD), Expected Credit Loss (ECL), Basel III Capital Adequacy (RWA, CRAR), Vintage cohorts, Roll-rate delinquency transition, and Macro Stress Testing.
+        const systemPrompt = `You are a Senior Quantitative Credit Risk Specialist for an enterprise banking platform.
+Your objective is to provide rigorous, mathematically sound, explainable answers regarding credit risk, loan underwriting decisions, probability of default (PD), Loss Given Default (LGD), Exposure at Default (EAD), Expected Credit Loss (ECL), Basel III Capital Adequacy (RWA, CRAR), Vintage cohorts, Roll-rate delinquency transition, and Macro Stress Testing.
 
 Formatting requirements:
 1. Use professional, clear, crisp banking terminology.
 2. Structure answers with headings, key takeaways, and mathematical equations ($$\\text{ECL} = \\text{PD} \\times \\text{LGD} \\times \\text{EAD}$$) where relevant.
 3. If referencing specific loan parameters, quote exact numbers with Indian Rupee formatting (e.g., ₹10,00,000, ₹6.82 Cr, 6.20%).
-4. At the very end of your answer, include a "### Sources" section with 2-4 formal banking/regulatory policy citations (e.g., "Credit Risk Policy v4.2 - Section 4", "Basel III Pillar 1 & 2 Guidelines", "IFRS 9 Impairment Standard").
+4. At the very end of your answer, include a "### Sources" section with 2-4 formal banking/regulatory policy citations (e.g., "Credit Risk Policy v3.1", "Basel III Pillar 1 & 2 Guidelines", "IFRS 9 Impairment Standard").
 
 Context about the active loan (if provided):
 ${loanContext ? JSON.stringify(loanContext, null, 2) : 'No specific single loan is currently highlighted; answer from portfolio-wide risk policies.'}`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
+          model: 'gemini-2.5-flash',
           contents: question,
           config: {
             systemInstruction: systemPrompt,
@@ -209,7 +177,6 @@ ${loanContext ? JSON.stringify(loanContext, null, 2) : 'No specific single loan 
 
         const rawText = response.text || '';
         
-        // Extract sources from response or supply default banking sources
         const sourcesMatch = rawText.match(/### Sources\s*([\s\S]*)$/i);
         let sources: string[] = [];
         let cleanText = rawText;
@@ -221,7 +188,7 @@ ${loanContext ? JSON.stringify(loanContext, null, 2) : 'No specific single loan 
             .filter(s => s.length > 0);
         } else {
           sources = [
-            'Internal Credit Risk Policy Manual v4.2 (2026)',
+            'Internal Credit Risk Policy Manual v3.1 (2024)',
             'Basel III Master Direction - Capital Adequacy Standards',
             'IFRS 9 / Ind AS 109 Expected Credit Loss Framework'
           ];
@@ -232,45 +199,26 @@ ${loanContext ? JSON.stringify(loanContext, null, 2) : 'No specific single loan 
           sources: sources.slice(0, 4),
           suggestedFollowUps: [
             'What mitigation actions are recommended for this risk level?',
-            'How would a 200 bps interest rate hike impact this customer?',
+            'How would a 150 bps interest rate hike impact this portfolio?',
             'Explain the Basel RWA contribution of this loan type'
           ]
         });
       } catch (geminiError) {
-        console.error('Gemini API query failed, falling back to local banking knowledge base:', geminiError);
+        console.error('Gemini API query failed, falling back to local institutional response:', geminiError);
       }
-    }
-
-    // Fallback rule-based matching if Gemini is unconfigured or encounters an error
-    const lowerQ = question.toLowerCase();
-    const matched = FALLBACK_AI_KNOWLEDGE.find(k => 
-      k.keywords.some(kw => lowerQ.includes(kw))
-    );
-
-    if (matched) {
-      return res.json({
-        answer: matched.answer,
-        sources: matched.sources,
-        suggestedFollowUps: [
-          'How does LGD differ between secured and unsecured loans?',
-          'What is the minimum regulatory CRAR under Basel III?',
-          'Explain the 60 DPD to 90+ DPD roll rate impact on ECL'
-        ]
-      });
     }
 
     // Default institutional response
     return res.json({
-      answer: `### Enterprise Credit Risk Analysis\n\nRegarding **"${question}"**:\n\nOur risk management governance models credit exposures using a multi-factor framework incorporating **Point-in-Time (PIT) PD**, collateral-discounted **LGD**, and calibrated **EAD** under **IFRS 9 Stage 1, 2, and 3** provisioning rules.\n\n- **Approval Ceiling**: Retail PD $\\le 7.50\\%$, MSME PD $\\le 12.00\\%$\n- **Capital Adequacy Ratio**: Currently **14.85%** (Basel III target: $\\ge 10.50\\%$)\n- **Decision Routing**: Automated for prime scores $\\ge 700$; Senior Review required for borderline PD ranges ($7.5\\% - 9.0\\%$).\n\nPlease ask for specific customer IDs (e.g., \`CUST-10245\`, \`LN-2026-00452\`) or specific regulatory topics for deeper drill-down.`,
+      answer: `### Enterprise Credit Risk Policy\n\nRegarding **"${question}"**:\n\nOur risk management governance models credit exposures using a dual-scorecard framework:\n\n1. **Application Scorecard**: Underwrites new loan origination across DTI, LTV, collateral coverage, and bureau credit score (with thin-file support).\n2. **Behavioral Scorecard (MOB ≥ 6)**: Longitudinal 12M default hazard incorporating Months On Book (quadratic curve), equity build-up, excess payments (CEP), and macroeconomic shocks (HPI, GDP).\n\n- **ECL Formula**: $$\\text{ECL} = \\text{PD} \\times \\text{LGD} \\times \\text{EAD}$$\n- **Current Capital Adequacy (CRAR)**: **16.4%** vs 10.5% statutory floor.`,
       sources: [
-        'Credit Risk Governance & Underwriting Policy 2026',
-        'Model Validation & SHAP Explainability Report v3.4',
+        'Credit Risk Governance & Underwriting Policy 2024',
+        'Model Validation & WOE Scorecard Documentation v3.1',
         'Regulatory Capital & Basel III Accord'
       ],
       suggestedFollowUps: [
-        'What is PD?',
+        'Why is MOB ≥ 6 months required for behavioral scoring?',
         'How is ECL calculated?',
-        'Why was loan LN-2026-00489 rejected?',
         'Explain Basel RWA capital requirements'
       ]
     });
@@ -298,7 +246,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🏦 AI Credit Risk Management Platform running on port ${PORT}`);
+    console.log(`🏦 AI Credit Risk Platform running on port ${PORT}`);
   });
 }
 

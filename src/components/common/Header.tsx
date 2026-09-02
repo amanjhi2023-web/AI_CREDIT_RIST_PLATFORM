@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { LoanApplication, UserRole } from '../../types';
+import { PortfolioLoanRecord, UserRole } from '../../types';
 import { 
   Search, 
   Bell, 
-  Check, 
   Calendar, 
-  Radio, 
-  ShieldAlert, 
-  User, 
-  ExternalLink,
-  ChevronRight,
-  Filter
+  CheckCircle2, 
+  Landmark,
+  ShieldCheck
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -18,8 +14,8 @@ interface HeaderProps {
   pageSubtitle?: string;
   activeMode: 'individual' | 'multiple';
   onModeChange: (mode: 'individual' | 'multiple') => void;
-  allLoans: LoanApplication[];
-  onSelectLoan: (loan: LoanApplication) => void;
+  allLoans?: PortfolioLoanRecord[];
+  onSelectLoan?: (loan: PortfolioLoanRecord) => void;
   userRole: UserRole;
   apiStatus?: string;
 }
@@ -56,7 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const searchResults = searchQuery.trim() === '' ? [] : allLoans.filter(l => 
+  const loansList = allLoans || [];
+  const searchResults = searchQuery.trim() === '' ? [] : loansList.filter(l => 
     l.loanId.toLowerCase().includes(searchQuery.toLowerCase()) ||
     l.customerId.toLowerCase().includes(searchQuery.toLowerCase()) ||
     l.customerName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -177,10 +174,10 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="text-[11px] text-slate-400">{l.loanType} • CUST: {l.customerId}</div>
                   </div>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
-                    l.decision === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
-                    l.decision === 'REJECTED' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    l.rating === 'Grade A' || l.rating === 'Grade B' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                    l.rating === 'Grade C' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                   }`}>
-                    {l.decision}
+                    {l.rating}
                   </span>
                 </button>
               ))}

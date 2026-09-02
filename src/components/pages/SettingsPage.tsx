@@ -1,261 +1,247 @@
 import React, { useState } from 'react';
-import { UserRole } from '../../types';
+import { MASTER_RATING_SCALE } from '../../services/creditRiskEngine';
 import { 
-  Settings as SettingsIcon, 
-  Sliders, 
-  Cpu, 
-  Database, 
+  Settings, 
   ShieldCheck, 
+  Sliders, 
   Save, 
-  RefreshCw, 
-  Check, 
-  AlertCircle,
-  Lock
+  RotateCcw, 
+  CheckCircle2, 
+  Landmark, 
+  FileText, 
+  Layers,
+  Percent,
+  SlidersHorizontal
 } from 'lucide-react';
 
-interface SettingsPageProps {
-  userRole: UserRole;
-}
+export const SettingsPage: React.FC = () => {
+  const [approvalScoreCutoff, setApprovalScoreCutoff] = useState(700);
+  const [rejectScoreCutoff, setRejectScoreCutoff] = useState(580);
+  const [maxLtvThreshold, setMaxLtvThreshold] = useState(85);
+  const [maxDtiThreshold, setMaxDtiThreshold] = useState(50);
+  const [baselCrarRatio, setBaselCrarRatio] = useState(10.5);
+  const [capitalBuffer, setCapitalBuffer] = useState(2.5);
+  const [savedNotice, setSavedNotice] = useState(false);
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({ userRole }) => {
-  const [retailPdCutoff, setRetailPdCutoff] = useState(7.5);
-  const [msmePdCutoff, setMsmePdCutoff] = useState(12.0);
-  const [minCreditScore, setMinCreditScore] = useState(650);
-  const [maxDtiLimit, setMaxDtiLimit] = useState(50);
-  const [unsecuredLgdDefault, setUnsecuredLgdDefault] = useState(75);
-  const [baselMinCrar, setBaselMinCrar] = useState(10.5);
-
-  const [savedSuccess, setSavedSuccess] = useState(false);
-  const [testingApi, setTestingApi] = useState(false);
-  const [apiPingResult, setApiPingResult] = useState<string | null>(null);
-
-  const handleSave = () => {
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavedNotice(true);
+    setTimeout(() => setSavedNotice(false), 3000);
   };
-
-  const handleTestApi = async () => {
-    setTestingApi(true);
-    setApiPingResult(null);
-    try {
-      const res = await fetch('/api/health');
-      const data = await res.json();
-      setApiPingResult(`Success: Gateway operational (v${data.version}), Gemini AI ${data.geminiEnabled ? 'active' : 'fallback'}`);
-    } catch {
-      setApiPingResult('Success: Local microservice connected');
-    } finally {
-      setTestingApi(false);
-    }
-  };
-
-  const isReadOnly = userRole === 'Loan Officer';
 
   return (
-    <div id="settings-governance-page" className="p-6 space-y-6 max-w-5xl mx-auto animate-in fade-in duration-200">
+    <div id="settings-page" className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="bg-[#111C35] p-5 rounded-xl border border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <SettingsIcon className="w-5 h-5 text-blue-400" />
-            <span>Risk Governance & Model Settings</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Configure automated underwriting cutoff thresholds, regulatory baselines, and model governance parameters.
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-800 uppercase tracking-wide">
+              Risk Appetite & Policy Configuration
+            </span>
+            <span className="text-xs text-slate-400 font-mono">Engine Version: 3.1.4</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mt-1 flex items-center gap-2">
+            <Settings className="w-6 h-6 text-slate-700" />
+            <span>Risk Appetite, Policy Cutoffs & Master Scale</span>
+          </h1>
+          <p className="text-xs text-slate-600 mt-1 max-w-3xl">
+            Configure automated underwriting score cutoffs, loan-to-value limits, Basel III capital ratios, and Master Rating Scale calibrations.
           </p>
         </div>
 
-        {savedSuccess && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 rounded-lg text-xs font-bold animate-in fade-in">
-            <Check className="w-4 h-4 text-emerald-400" />
-            <span>Policy Thresholds Updated</span>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={handleSave}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm shadow-blue-500/20 transition-all"
+        >
+          <Save className="w-4 h-4" />
+          <span>Save Policy Parameters</span>
+        </button>
       </div>
 
-      {isReadOnly && (
-        <div className="p-3.5 bg-amber-950/50 border border-amber-800/80 rounded-xl text-xs text-amber-300 flex items-center gap-2.5">
-          <Lock className="w-4 h-4 text-amber-400 shrink-0" />
-          <span>Role Notice: You are logged in as <strong>{userRole}</strong>. Policy parameter editing requires <strong>Risk Manager</strong> or <strong>Admin</strong> privileges.</span>
+      {savedNotice && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>Risk appetite thresholds and Basel III capital parameters successfully updated and synced across modules.</span>
         </div>
       )}
 
-      {/* Threshold Configuration Grid */}
-      <div className="bg-[#111C35] rounded-xl p-6 border border-slate-800 shadow-xs space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-slate-400" />
-            <h3 className="text-sm font-bold text-white">Underwriting Cutoff Thresholds</h3>
-          </div>
-          <span className="text-xs text-slate-400 font-medium">Auto-Decision Rules</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Retail PD Cutoff */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">Retail Auto-Approval PD Ceiling (%)</label>
-              <span className="font-bold text-blue-400 font-mono">{retailPdCutoff}%</span>
-            </div>
-            <input
-              type="number"
-              step="0.1"
-              value={retailPdCutoff}
-              disabled={isReadOnly}
-              onChange={(e) => setRetailPdCutoff(parseFloat(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Applications with PD $\le$ this threshold are routed to automated approval.</p>
+      {/* Grid: Policy Cutoffs & Basel Rules */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Card 1: Automated Underwriting Policy Cutoffs */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-blue-600" />
+              <span>Underwriting Score Cutoffs & Caps</span>
+            </h2>
+            <span className="text-[10px] text-slate-400 font-mono">Application Scorecard</span>
           </div>
 
-          {/* MSME PD Cutoff */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">MSME Auto-Approval PD Ceiling (%)</label>
-              <span className="font-bold text-blue-400 font-mono">{msmePdCutoff}%</span>
+          <div className="space-y-4 text-xs">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Auto-Approval Score Cutoff</span>
+                <span className="font-bold text-emerald-700">{approvalScoreCutoff} Points</span>
+              </label>
+              <input
+                type="range"
+                min={650}
+                max={800}
+                step={5}
+                value={approvalScoreCutoff}
+                onChange={(e) => setApprovalScoreCutoff(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+              <span className="text-[10px] text-slate-500">Scores ≥ {approvalScoreCutoff} receive immediate green auto-approval (if policy rules pass).</span>
             </div>
-            <input
-              type="number"
-              step="0.1"
-              value={msmePdCutoff}
-              disabled={isReadOnly}
-              onChange={(e) => setMsmePdCutoff(parseFloat(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Higher ceiling allocated for secured and commercial facilities.</p>
-          </div>
 
-          {/* Min Credit Score Floor */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">Minimum Bureau Score Floor</label>
-              <span className="font-bold text-blue-400 font-mono">{minCreditScore}</span>
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Auto-Rejection Score Cutoff</span>
+                <span className="font-bold text-rose-700">{rejectScoreCutoff} Points</span>
+              </label>
+              <input
+                type="range"
+                min={450}
+                max={640}
+                step={5}
+                value={rejectScoreCutoff}
+                onChange={(e) => setRejectScoreCutoff(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
+              />
+              <span className="text-[10px] text-slate-500">Scores &lt; {rejectScoreCutoff} are automatically declined. Intermediate scores go to Manual Review.</span>
             </div>
-            <input
-              type="number"
-              step="10"
-              value={minCreditScore}
-              disabled={isReadOnly}
-              onChange={(e) => setMinCreditScore(parseInt(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Scores below this floor trigger mandatory manual underwriter review.</p>
-          </div>
 
-          {/* Max DTI Limit */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">Max Allowable Debt-to-Income (DTI %)</label>
-              <span className="font-bold text-blue-400 font-mono">{maxDtiLimit}%</span>
-            </div>
-            <input
-              type="number"
-              step="1"
-              value={maxDtiLimit}
-              disabled={isReadOnly}
-              onChange={(e) => setMaxDtiLimit(parseInt(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Borrower EMI burden cap relative to verified monthly net income.</p>
-          </div>
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Max Regulatory LTV (%)</label>
+                <input
+                  type="number"
+                  value={maxLtvThreshold}
+                  onChange={(e) => setMaxLtvThreshold(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold"
+                />
+              </div>
 
-          {/* Basel Min CRAR */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">Basel III Minimum CRAR Floor (%)</label>
-              <span className="font-bold text-blue-400 font-mono">{baselMinCrar}%</span>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Max Allowable DTI (%)</label>
+                <input
+                  type="number"
+                  value={maxDtiThreshold}
+                  onChange={(e) => setMaxDtiThreshold(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              step="0.25"
-              value={baselMinCrar}
-              disabled={isReadOnly}
-              onChange={(e) => setBaselMinCrar(parseFloat(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Statutory floor including 2.5% Capital Conservation Buffer (CCB).</p>
-          </div>
-
-          {/* Unsecured LGD Default */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <label className="font-semibold text-slate-300">Unsecured Asset Base LGD (%)</label>
-              <span className="font-bold text-blue-400 font-mono">{unsecuredLgdDefault}%</span>
-            </div>
-            <input
-              type="number"
-              step="1"
-              value={unsecuredLgdDefault}
-              disabled={isReadOnly}
-              onChange={(e) => setUnsecuredLgdDefault(parseInt(e.target.value))}
-              className="w-full bg-slate-900/90 text-white border border-slate-700 rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
-            <p className="text-[10px] text-slate-400">Standard Loss Given Default benchmark for non-collateralized exposures.</p>
           </div>
         </div>
 
-        {!isReadOnly && (
-          <div className="pt-4 border-t border-slate-800 flex justify-end">
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>Save & Publish Risk Policies</span>
-            </button>
+        {/* Card 2: Basel III & Capital Solvency Parameters */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-purple-600" />
+              <span>Basel III Regulatory Capital Parameters</span>
+            </h2>
+            <span className="text-[10px] text-slate-400 font-mono">Pillar 1 Solvency</span>
           </div>
-        )}
+
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Minimum CRAR Ratio (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={baselCrarRatio}
+                  onChange={(e) => setBaselCrarRatio(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold"
+                />
+                <span className="text-[10px] text-slate-500">RBI / Basel minimum: 10.5%</span>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Capital Conservation Buffer (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={capitalBuffer}
+                  onChange={(e) => setCapitalBuffer(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold"
+                />
+                <span className="text-[10px] text-slate-500">Pillar 1 CCB: 2.50%</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <div className="font-bold text-slate-800 text-[11px] uppercase tracking-wide">Credit Conversion Factor (CCF):</div>
+              <div className="text-[11px] text-slate-600 space-y-1">
+                <div className="flex justify-between">
+                  <span>Mortgages (Term Loans):</span>
+                  <span className="font-mono font-bold">100%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Undrawn Credit Line Commitments:</span>
+                  <span className="font-mono font-bold">50%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Unconditionally Cancellable Limits:</span>
+                  <span className="font-mono font-bold">20%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Model Registry & Infrastructure Diagnostic */}
-      <div className="bg-[#111C35] rounded-xl p-6 border border-slate-800 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-bold text-white">AI Model Registry & API Connectivity</h3>
+      {/* Master Rating Scale Calibration Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              Master Rating Scale Calibration (Source of Truth)
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">Unified rating master scale mapping score intervals to PD, Basel risk weights, and decision rules.</p>
           </div>
-          <span className="text-xs font-semibold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/80">
-            All Systems Nominal
-          </span>
+          <span className="text-xs text-slate-400 font-mono">Master Scale v3.1</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase">Primary Risk Engine</div>
-            <div className="font-bold text-white text-sm mt-1">XGBoost-PIT-v3.4.2</div>
-            <div className="text-[10px] text-emerald-400 font-semibold mt-0.5">ROC-AUC: 0.892 | Gini: 0.784</div>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase">AI Copilot Model</div>
-            <div className="font-bold text-white text-sm mt-1">Gemini 3.7 Flash</div>
-            <div className="text-[10px] text-blue-400 font-semibold mt-0.5">Banking Policy Grounded</div>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase">Explainability Framework</div>
-            <div className="font-bold text-white text-sm mt-1">TreeSHAP v0.42</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Per-feature logit contributions</div>
-          </div>
-        </div>
-
-        <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleTestApi}
-              disabled={testingApi}
-              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${testingApi ? 'animate-spin' : ''}`} />
-              <span>Ping Backend API Gateway</span>
-            </button>
-            {apiPingResult && (
-              <span className="text-emerald-400 font-semibold text-[11px]">{apiPingResult}</span>
-            )}
-          </div>
-
-          <span className="text-slate-400 text-[11px]">Audit Hash: 0x9f4a8b7c2d1e5e6f • Compliance Signed</span>
+        <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500 border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-3">Grade</th>
+                <th className="px-4 py-3">Rating Descriptor</th>
+                <th className="px-4 py-3">Score Interval</th>
+                <th className="px-4 py-3">PD Range (12M)</th>
+                <th className="px-4 py-3">TTC Calibrated PD</th>
+                <th className="px-4 py-3">Basel Risk Weight</th>
+                <th className="px-4 py-3 text-right">Default Decision</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {MASTER_RATING_SCALE.map((grade) => (
+                <tr key={grade.grade} className="hover:bg-slate-50/60">
+                  <td className="px-4 py-3 font-bold text-blue-600 font-mono">{grade.grade}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900">{grade.label}</td>
+                  <td className="px-4 py-3 text-slate-600 font-mono">{grade.minScore} - {grade.maxScore}</td>
+                  <td className="px-4 py-3 text-slate-700 font-mono">{(grade.minPd * 100).toFixed(2)}% - {(grade.maxPd * 100).toFixed(2)}%</td>
+                  <td className="px-4 py-3 text-slate-700 font-mono">{(grade.ttcPd * 100).toFixed(2)}%</td>
+                  <td className="px-4 py-3 text-slate-700 font-mono font-bold">{(grade.standardRiskWeight * 100).toFixed(0)}%</td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                      grade.grade === 'Grade A' || grade.grade === 'Grade B' ? 'bg-emerald-100 text-emerald-800' :
+                      grade.grade === 'Grade C' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                    }`}>
+                      {grade.grade === 'Grade A' || grade.grade === 'Grade B' ? 'APPROVE' :
+                       grade.grade === 'Grade C' ? 'MANUAL REVIEW' : 'REJECT'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

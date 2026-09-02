@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Bot, X, Sparkles, Send, Zap, ChevronRight, MessageSquare } from 'lucide-react';
-import { LoanApplication } from '../../types';
-import { formatINR, formatPercent } from '../../utils/formatting';
+import { Bot, X, Sparkles, Send, ChevronRight } from 'lucide-react';
+import { PortfolioLoanRecord } from '../../types';
 
 interface FloatingAiAssistantProps {
-  activeLoan?: LoanApplication | null;
+  activeLoan?: PortfolioLoanRecord | null;
   onOpenFullAssistant: () => void;
 }
 
@@ -24,7 +23,7 @@ export const FloatingAiAssistant: React.FC<FloatingAiAssistantProps> = ({
   const [isTyping, setIsTyping] = useState(false);
 
   const samplePrompts = [
-    activeLoan ? `Why was ${activeLoan.loanId} ${activeLoan.decision}?` : 'Explain PD & LGD in behavioral risk',
+    activeLoan ? `Why was ${activeLoan.loanId} categorized as ${activeLoan.rating}?` : 'Explain PD & LGD in behavioral risk',
     'What causes a loan rejection in Application Scorecard?',
     'How is ECL calculated from PD, LGD, and EAD?',
     'Show Basel III CRAR capital formula',
@@ -54,7 +53,7 @@ export const FloatingAiAssistant: React.FC<FloatingAiAssistantProps> = ({
       } else if (lower.includes('pd') || lower.includes('lgd') || lower.includes('behavioral')) {
         botResponse = `In Behavioral Risk monitoring, we track real-time repayment delays, credit line utilization, and Point-in-Time (PIT) PD migrations. If behavioral PD deteriorates above the baseline, ECL provisioning increases and RWA capital requirements rise.`;
       } else if (activeLoan && lower.includes(activeLoan.loanId.toLowerCase())) {
-        botResponse = `Loan **${activeLoan.loanId}** for **${activeLoan.customerName}** has Credit Score: ${activeLoan.creditScore}, PD: ${formatPercent(activeLoan.pd)}, LGD: ${formatPercent(activeLoan.lgd)}, EAD: ${formatINR(activeLoan.ead)}, and ECL: ${formatINR(activeLoan.ecl)}. Decision is **${activeLoan.decision}** based on ${activeLoan.decisionReason || 'standard risk rules'}.`;
+        botResponse = `Loan **${activeLoan.loanId}** for **${activeLoan.customerName}** has Credit Score: ${activeLoan.creditScore}, PD: ${(activeLoan.pd * 100).toFixed(2)}%, LGD: ${(activeLoan.lgd * 100).toFixed(1)}%, EAD: ₹${activeLoan.ead.toLocaleString('en-IN')}, and ECL: ₹${activeLoan.ecl.toLocaleString('en-IN')}. Rating is **${activeLoan.rating}**.`;
       } else {
         botResponse = `I have analyzed the credit risk parameters. For ${activeLoan ? `active loan ${activeLoan.loanId}` : 'portfolio underwriting'}, all calculations adhere to Basel III Standardised Approach and IFRS 9 ECL provisioning standards.`;
       }

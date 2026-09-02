@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @layer utilities {
-  /* Custom thin scrollbar for dark theme */
+  /* Custom scrollbar for banking UI */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -10,11 +10,11 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #cbd5e1;
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: #94a3b8;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -28,7 +28,7 @@
 
 body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  background-color: #0b132b;
-  color: #f1f5f9;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
